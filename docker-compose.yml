@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  mongo:
+    container_name: mongo
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: feruza1727
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - medmon
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mongo --eval 'db.runCommand({ ping: 1 })'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  
+  live-service:
+    container_name: live
+    build: .
+    depends_on:
+      - mongo
+
+    ports:
+      - "6060:6060"
+    networks:
+      - medmon
+    environment:
+      - MONGO_HOST=mongo-db
+      - MONGO_PORT=27017
+      - MONGO_USER=feruza
+      - MONGO_PASSWORD=feruza1727
+      - MONGO_DB=timecapsule
+
+networks:
+  medmon:
+    external: true
+    name: medmon
+    driver: bridge
+

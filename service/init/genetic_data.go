@@ -25,6 +25,8 @@ func (s *GeneticDataService) Create(ctx context.Context, req *pb.GeneticDataCrea
 		slog.Error("Error creating genetic data: %v", err)
         return nil, err
     }
+
+    slog.Info("Successfully created genetic data")
     return res, nil
 }
 
@@ -35,6 +37,8 @@ func (s *GeneticDataService) Update(ctx context.Context, req *pb.GeneticDataUpda
 		slog.Error("Error updating genetic data: %v", err)
         return nil, err
     }
+
+    slog.Info("Successfully updated genetic data")
     return res, nil
 }
 
@@ -44,6 +48,8 @@ func (s *GeneticDataService) Delete(ctx context.Context, req *pb.GetById) (*pb.V
 		slog.Error("Error deleting genetic data: %v", err)
         return nil, err
     }
+
+    slog.Info("Successfully deleted genetic data")
     return res, nil
 }
 
@@ -53,6 +59,8 @@ func (s *GeneticDataService) Get(ctx context.Context, req *pb.GetById) (*pb.Gene
 		slog.Error("Error getting genetic data: %v", err)
         return nil, err
     }
+
+    slog.Info("Successfully retrieved genetic data")
     return res, nil
 }
 
@@ -63,5 +71,6 @@ func (s *GeneticDataService) List(ctx context.Context, req *pb.GetAllGeneticDate
         return nil, err
     }
 
+    slog.Info("Successfully listed genetic data")
     return res, nil
 }

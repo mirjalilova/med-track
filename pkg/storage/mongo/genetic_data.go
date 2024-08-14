@@ -123,7 +123,7 @@ func (m *GeneticData) List(req *pb.GetAllGeneticDateReq) (*pb.GetAllGeneticDateR
 			return nil, fmt.Errorf("invalid analysis date format: %v", err)
 		}
 
-		filter = append(filter, bson.E{Key: "analysisdate", Value: bson.D{{Key: "$lte", Value: analysisDate}}})
+		filter = append(filter, bson.E{Key: "analysisdate", Value: bson.D{{Key: "$lt", Value: analysisDate}}})
 	}
 
 	findOptions := options.Find()

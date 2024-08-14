@@ -34,6 +34,7 @@ type LifeStyleI interface {
     Delete(req *pb.GetById) (*pb.Void, error)
     Get(req *pb.GetById) (*pb.LifestyleRes, error)
     List(req *pb.GetAllLifestyleReq) (*pb.GetAllLifestyleRes, error)
+    GetWeeklySummary(req *pb.WeeklySummaryReq) (*pb.WeeklySummary, error)
 }
 
 type WearableDataI interface {
@@ -42,6 +43,7 @@ type WearableDataI interface {
     Delete(req *pb.GetById) (*pb.Void, error)
     Get(req *pb.GetById) (*pb.WearableDataRes, error)
     List(req *pb.GetAllWearableDataReq) (*pb.GetAllWearableDataRes, error)
+    GetRealTimeMonitoringData(req *pb.GetById) (*pb.WearableDataRes, error)
 }
 
 type HealthRecommendationI interface {

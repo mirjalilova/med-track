@@ -25,6 +25,8 @@ func (s *RecomendationService) Create(ctx context.Context, req *pb.Recommendatio
 		slog.Error("Error creating recommendation: %v", err)
         return nil, err
     }
+
+    slog.Info("Successfully created recommendation")
     return res, nil
 }
 
@@ -34,6 +36,8 @@ func (s *RecomendationService) Update(ctx context.Context, req *pb.Recommendatio
 		slog.Error("Error updating recommendation: %v", err)
         return nil, err
     }
+
+    slog.Info("Successfully updated recommendation")
     return res, nil
 }
 
@@ -43,6 +47,8 @@ func (s *RecomendationService) Delete(ctx context.Context, req *pb.GetById) (*pb
 		slog.Error("Error deleting recommendation: %v", err)
         return nil, err
     }
+
+    slog.Info("Successfully deleted recommendation")
     return res, nil
 }
 
@@ -52,6 +58,8 @@ func (s *RecomendationService) Get(ctx context.Context, req *pb.GetById) (*pb.Re
 		slog.Error("Error getting recommendation: %v", err)
         return nil, err
     }
+
+    slog.Info("Successfully retrieved recommendation")
     return res, nil
 }
 
@@ -62,5 +70,6 @@ func (s *RecomendationService) List(ctx context.Context, req *pb.GetAllRecommend
         return nil, err
     }
 
+    slog.Info("Successfully listed recommendations")
     return res, nil
 }

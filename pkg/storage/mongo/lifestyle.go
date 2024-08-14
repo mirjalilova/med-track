@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -32,13 +33,15 @@ func (m *Lifestyle) Create(req *pb.LifestyleCreate) (*pb.Void, error) {
 		Weight:        req.Weight,
 		Height:        req.Height,
 		Temperature:   req.Temperature,
-		StressLevel:   req.StressLevel,
+		StepCount:     req.StepCount,
 		SleepDuration: req.SleepDuration,
 		RecordedDate:  req.RecordedDate,
 		CreatedAt:     time.Now().Format(layout),
 		UpdatedAt:     time.Now().Format(layout),
 		DeletedAt:     0,
 	}
+
+	lifestyle.StressLevel = int32(CalculateStressLevel(req.HeartRate, float64(req.SleepDuration), req.StepCount))
 
 	_, err := m.Lifestyle.InsertOne(context.Background(), lifestyle)
 	if err != nil {
@@ -56,6 +59,8 @@ func (m *Lifestyle) Update(req *pb.LifestyleUpdate) (*pb.Void, error) {
 	updateFields := bson.D{
 		{Key: "updatedat", Value: time.Now().Format(layout)},
 	}
+
+	req.StressLevel = int32(CalculateStressLevel(req.HeartRate, float64(req.SleepDuration), req.StepCount))
 
 	if req.DataType != "" {
 		updateFields = append(updateFields, bson.E{Key: "datatype", Value: req.DataType})
@@ -118,20 +123,29 @@ func (m *Lifestyle) Delete(req *pb.GetById) (*pb.Void, error) {
 }
 
 func (m *Lifestyle) Get(req *pb.GetById) (*pb.LifestyleRes, error) {
-	res := &pb.LifestyleRes{}
+    res := &pb.LifestyleRes{}
 
-	filter := bson.D{
-		{Key: "id", Value: req.Id},
-		{Key: "deletedat", Value: 0},
-	}
+    filter := bson.M{
+        "$or": []bson.M{
+            {"id": req.Id},
+            {"userid": req.Id},
+        },
+        "deletedat": 0,
+    }
 
-	err := m.Lifestyle.FindOne(context.TODO(), filter).Decode(res)
-	if err != nil {
-		return nil, err
-	}
+    err := m.Lifestyle.FindOne(context.TODO(), filter).Decode(res)
+    if err != nil {
+        if err == mongo.ErrNoDocuments {
+            fmt.Println("No documents found with the given filter.")
+        } else {
+            fmt.Printf("Error executing query: %v\n", err)
+        }
+        return nil, err
+    }
 
-	return res, nil
+    return res, nil
 }
+
 
 func (m *Lifestyle) List(req *pb.GetAllLifestyleReq) (*pb.GetAllLifestyleRes, error) {
 	res := &pb.GetAllLifestyleRes{}
@@ -169,4 +183,49 @@ func (m *Lifestyle) List(req *pb.GetAllLifestyleReq) (*pb.GetAllLifestyleRes, er
 	}
 
 	return res, nil
+}
+
+func (m *Lifestyle) GetWeeklySummary(req *pb.WeeklySummaryReq) (*pb.WeeklySummary, error) {
+	filter := bson.D{
+		{Key: "userid", Value: req.UserId},
+		{Key: "recordeddate", Value: bson.D{
+			{Key: "$gte", Value: req.StartDate},
+			{Key: "$lt", Value: req.EndDate},
+		}},
+		{Key: "deletedat", Value: 0},
+	}
+
+	cursor, err := m.Lifestyle.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+
+	var totalHeartRate float64
+	var totalSleepDuration, totalTemperature float32
+	var count int
+
+	for cursor.Next(context.Background()) {
+		var ls pb.WeeklySummary
+		if err := cursor.Decode(&ls); err != nil {
+			return nil, err
+		}
+
+		totalHeartRate += float64(ls.HeartRate)
+		totalSleepDuration += ls.SleepDuration
+		totalTemperature += ls.Temperature
+		count++
+	}
+
+	if count == 0 {
+		return nil, fmt.Errorf("no data found for user %s within the given range", req.UserId)
+	}
+
+	averageLifestyle := &pb.WeeklySummary{
+		HeartRate:      int32(totalHeartRate / float64(count)),
+		SleepDuration:  float32(totalSleepDuration) / float32(count),
+		Temperature:    totalTemperature / float32(count),
+	}
+
+	return averageLifestyle, nil
 }

@@ -36,6 +36,7 @@ type LifeStyleI interface {
 	Delete(ctx context.Context, request *pb.GetById) (*pb.Void, error)
 	Get(ctx context.Context, request *pb.GetById) (*pb.LifestyleRes, error)
 	List(ctx context.Context, request *pb.GetAllLifestyleReq) (*pb.GetAllLifestyleRes, error)
+	GetWeeklySummary(ctx context.Context, request *pb.WeeklySummaryReq) (*pb.WeeklySummary, error)
 }
 
 type WearableDataI interface {
@@ -44,6 +45,7 @@ type WearableDataI interface {
 	Delete(ctx context.Context, request *pb.GetById) (*pb.Void, error)
 	Get(ctx context.Context, request *pb.GetById) (*pb.WearableDataRes, error)
 	List(ctx context.Context, request *pb.GetAllWearableDataReq) (*pb.GetAllWearableDataRes, error)
+	GetRealTimeMonitoringData(ctx context.Context, request *pb.GetById) (*pb.WearableDataRes, error)
 }
 
 type HealthRecommendationI interface {

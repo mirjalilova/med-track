@@ -146,7 +146,7 @@ func (m *MedicalRecord) List(req *pb.GetAllMedicalRecords) (*pb.GetAllMedicalRec
 			return nil, fmt.Errorf("invalid record date format: %v", err)
 		}
 
-		filter = append(filter, bson.E{Key: "recorddate", Value: bson.D{{Key: "$lte", Value: recordDate}}})
+		filter = append(filter, bson.E{Key: "recorddate", Value: bson.D{{Key: "$lt", Value: recordDate}}})
 	}
 
 	if req.UserId!= "" {

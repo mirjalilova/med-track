@@ -25,6 +25,8 @@ func (s *MedicalRecordService) Create(ctx context.Context, req *pb.MedicalRecord
         slog.Error("Error creating medical record: %v", err)
         return nil, err
     }
+
+    slog.Info("Successfully created medical record")
 	return res, nil
 }
 
@@ -35,6 +37,8 @@ func (s *MedicalRecordService) Update(ctx context.Context, req *pb.MedicalRecord
         slog.Error("Error updating medical record: %v", err)
         return nil, err
     }
+
+    slog.Info("Successfully updated medical record")
     return res, nil
 }
 
@@ -44,6 +48,8 @@ func (s *MedicalRecordService) Delete(ctx context.Context, req *pb.GetById) (*pb
         slog.Error("Error deleting medical record: %v", err)
         return nil, err
     }
+
+    slog.Info("Successfully deleted medical record")
     return res, nil
 }
 
@@ -53,6 +59,8 @@ func (s *MedicalRecordService) Get(ctx context.Context, req *pb.GetById) (*pb.Me
         slog.Error("Error getting medical record: %v", err)
         return nil, err
     }
+
+    slog.Info("Successfully retrieved medical record")
     return res, nil
 }
 
@@ -63,5 +71,6 @@ func (s *MedicalRecordService) List(ctx context.Context, req *pb.GetAllMedicalRe
         return nil, err
     }
 
+    slog.Info("Successfully listed medical records")
     return res, nil
 }

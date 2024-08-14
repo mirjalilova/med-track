@@ -10,15 +10,18 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/exp/slog"
 )
 
 type WearableData struct {
 	WearableData *mongo.Collection
+	LifeStyle    *mongo.Collection
 }
 
 func NewWearableData(mongoDb *mongo.Database) *WearableData {
 	return &WearableData{
 		WearableData: mongoDb.Collection("wearable_data"),
+		LifeStyle:    mongoDb.Collection("lifestyles"),
 	}
 }
 
@@ -33,6 +36,7 @@ func (m *WearableData) Create(req *pb.WearableDataCreate) (*pb.Void, error) {
 		HeartRate:         req.HeartRate,
 		SleepDuration:     req.SleepDuration,
 		WorkoutType:       req.WorkoutType,
+		Temperature:       req.Temperature,
 		RecordedTimestamp: req.RecordedTimestamp,
 		CreatedAt:         time.Now().Format(layout),
 		UpdatedAt:         time.Now().Format(layout),
@@ -43,6 +47,57 @@ func (m *WearableData) Create(req *pb.WearableDataCreate) (*pb.Void, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	filter := bson.D{
+		{Key: "recordeddate", Value: req.RecordedTimestamp[10:]},
+		{Key: "deletedat", Value: 0},
+	}
+
+	res := &pb.LifeStyle{}
+
+	err = m.LifeStyle.FindOne(context.TODO(), filter).Decode(res)
+	if err != nil {
+		slog.Error("error finding life style for date: %v", err)
+	}
+
+	lf, err := m.CalculateDailyAverages(req.UserId, req.RecordedTimestamp)
+	if err != nil {
+		slog.Error("error calculating daily averages: %v", err)
+	}
+
+	res.StressLevel = int32(CalculateStressLevel(lf.HeartRate, float64(lf.SleepDuration), lf.StepCount))
+
+	filter = bson.D{
+		{Key: "recordeddate", Value: req.RecordedTimestamp[10:]},
+		{Key: "deletedat", Value: 0},
+	}
+
+	updateFields := bson.D{
+		{Key: "updatedat", Value: time.Now().Format(layout)},
+	}
+
+	if lf.HeartRate != 0 {
+		updateFields = append(updateFields, bson.E{Key: "heartrate", Value: lf.HeartRate})
+	}
+	if lf.Temperature != 0 {
+		updateFields = append(updateFields, bson.E{Key: "temperature", Value: lf.Temperature})
+	}
+	if lf.SleepDuration != 0 {
+		updateFields = append(updateFields, bson.E{Key: "sleepduration", Value: lf.SleepDuration})
+	}
+	if res.StressLevel != 0 {
+		updateFields = append(updateFields, bson.E{Key: "stresslevel", Value: res.StressLevel})
+    }
+
+	update := bson.D{
+		{Key: "$set", Value: updateFields},
+	}
+
+	_, err = m.LifeStyle.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		slog.Error("error updating life style: %v", err)
+	}
+
 	return &pb.Void{}, nil
 }
 
@@ -80,6 +135,9 @@ func (m *WearableData) Update(req *pb.WearableDataUpdate) (*pb.Void, error) {
 	if req.RecordedTimestamp != "" {
 		updateFields = append(updateFields, bson.E{Key: "recordedtimestamp", Value: req.RecordedTimestamp})
 	}
+	if req.Temperature != 0 {
+		updateFields = append(updateFields, bson.E{Key: "temperature", Value: req.Temperature})
+	}
 
 	update := bson.D{
 		{Key: "$set", Value: updateFields},
@@ -89,6 +147,7 @@ func (m *WearableData) Update(req *pb.WearableDataUpdate) (*pb.Void, error) {
 	if err != nil {
 		return nil, err
 	}
+
 
 	return &pb.Void{}, nil
 }
@@ -143,7 +202,7 @@ func (m *WearableData) List(req *pb.GetAllWearableDataReq) (*pb.GetAllWearableDa
 			return nil, fmt.Errorf("invalid record date format: %v", err)
 		}
 
-		filter = append(filter, bson.E{Key: "recordedtimestamp", Value: bson.D{{Key: "$lte", Value: recordDate}}})
+		filter = append(filter, bson.E{Key: "recordedtimestamp", Value: bson.D{{Key: "$lt", Value: recordDate}}})
 	}
 
 	findOptions := options.Find()
@@ -171,4 +230,20 @@ func (m *WearableData) List(req *pb.GetAllWearableDataReq) (*pb.GetAllWearableDa
 	}
 
 	return res, nil
+}
+
+func (m *WearableData) GetRealTimeMonitoringData(req *pb.GetById) (*pb.WearableDataRes, error) {
+	filter := bson.D{
+		{Key: "userid", Value: req.Id},
+		{Key: "deletedat", Value: 0},
+	}
+
+	opts := options.FindOne().SetSort(bson.D{{Key: "recordedtimestamp", Value: -1}})
+	var wearableData pb.WearableDataRes
+	err := m.WearableData.FindOne(context.Background(), filter, opts).Decode(&wearableData)
+	if err != nil {
+		return nil, err
+	}
+
+	return &wearableData, nil
 }

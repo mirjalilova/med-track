@@ -17,7 +17,7 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /app
 
 COPY --from=builder /app/medtrack .
-COPY .env .env 
+COPY .env .
 
 RUN chmod +x medtrack
 

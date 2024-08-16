@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,9 +22,6 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.SSH_PORT }}
         script: |
-          pwd
-          ls
           cd ~/project/medmon/med-track
           sudo docker compose down
-          sudo docker compose up -d
           sudo docker compose up -d

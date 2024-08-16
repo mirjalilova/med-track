@@ -75,7 +75,7 @@ func (m *WearableData) Create(req *pb.WearableDataCreate) (*pb.Void, error) {
 
 	filter := bson.D{
 		{Key: "userid", Value: req.UserId},
-		{Key: "recordeddate", Value: req.RecordedTimestamp[:10]},
+		{Key: "recordeddate", Value: data.RecordedTimestamp[:10]},
 		{Key: "deletedat", Value: 0},
 	}
 
@@ -109,7 +109,7 @@ func (m *WearableData) Create(req *pb.WearableDataCreate) (*pb.Void, error) {
 		}
 	}
 
-	lf, err := m.CalculateDailyAverages(req.UserId, req.RecordedTimestamp)
+	lf, err := m.CalculateDailyAverages(req.UserId, data.RecordedTimestamp)
 	if err != nil {
 		slog.Error("error calculating daily averages: %v", err)
 	}

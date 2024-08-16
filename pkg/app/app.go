@@ -38,7 +38,7 @@ func Run(cfg *config.Config) {
 	pb.RegisterNotificationServiceServer(newServer, notification)
 
 	// Kafka
-	brokers := []string{"localhost:9092"}
+	brokers := []string{"kafka:9092"}
 	cm := kafka.NewKafkaConsumerManager()
 	RegisterConsumer(brokers, cm, medical)
 

@@ -1,4 +1,4 @@
-FROM golang:1.22.1 AS builder
+FROM golang:1.22 AS builder
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o medtrack .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o medtrack ./cmd/
 
 FROM alpine:latest
 

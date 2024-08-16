@@ -12,6 +12,7 @@ type ServiceI interface {
 	LifeStyle() LifeStyleI
 	WearableData() WearableDataI
 	HealthRecommendation() HealthRecommendationI
+	Notification() NotificationI
 }
 
 type MedicalRecordI interface {
@@ -54,4 +55,10 @@ type HealthRecommendationI interface {
 	Delete(ctx context.Context, request *pb.GetById) (*pb.Void, error)
 	Get(ctx context.Context, request *pb.GetById) (*pb.RecommendationRes, error)
 	List(ctx context.Context, request *pb.GetAllRecommendationReq) (*pb.GetAllRecommendation, error)
+}
+
+type NotificationI interface {
+	Create(ctx context.Context, request *pb.Notification) (*pb.Void, error)
+	Get(ctx context.Context, request *pb.GetById) (*pb.Notification, error)
+	List(ctx context.Context, request *pb.GetAllNotificationReq) (*pb.GetAllNotificationRes, error)
 }

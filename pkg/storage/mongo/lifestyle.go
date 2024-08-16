@@ -190,11 +190,14 @@ func (m *Lifestyle) GetWeeklySummary(req *pb.WeeklySummaryReq) (*pb.WeeklySummar
 		{Key: "userid", Value: req.UserId},
 		{Key: "recordeddate", Value: bson.D{
 			{Key: "$gte", Value: req.StartDate},
-			{Key: "$lt", Value: req.EndDate},
+			{Key: "$lte", Value: req.EndDate},  // Use $lte instead of $lt
 		}},
 		{Key: "deletedat", Value: 0},
-	}
+	}	
 
+	fmt.Printf("Filter: %+v\n", filter)
+
+	fmt.Println(req.StartDate, req.EndDate)
 	cursor, err := m.Lifestyle.Find(context.Background(), filter)
 	if err != nil {
 		return nil, err
@@ -204,6 +207,8 @@ func (m *Lifestyle) GetWeeklySummary(req *pb.WeeklySummaryReq) (*pb.WeeklySummar
 	var totalHeartRate float64
 	var totalSleepDuration, totalTemperature float32
 	var count int
+
+	var averageLifestyle pb.WeeklySummary
 
 	for cursor.Next(context.Background()) {
 		var ls pb.WeeklySummary
@@ -215,17 +220,20 @@ func (m *Lifestyle) GetWeeklySummary(req *pb.WeeklySummaryReq) (*pb.WeeklySummar
 		totalSleepDuration += ls.SleepDuration
 		totalTemperature += ls.Temperature
 		count++
+
+		averageLifestyle.HeartRate = int32(totalHeartRate / float64(count))
+		averageLifestyle.SleepDuration = float32(totalSleepDuration) / float32(count)
+		averageLifestyle.Temperature = totalTemperature / float32(count)
+		averageLifestyle.HeartRates = append(averageLifestyle.HeartRates, ls.HeartRate)
+		averageLifestyle.SleepDurations = append(averageLifestyle.SleepDurations, ls.SleepDuration)
+		averageLifestyle.Temperatures = append(averageLifestyle.Temperatures, ls.Temperature)
 	}
 
 	if count == 0 {
 		return nil, fmt.Errorf("no data found for user %s within the given range", req.UserId)
 	}
 
-	averageLifestyle := &pb.WeeklySummary{
-		HeartRate:      int32(totalHeartRate / float64(count)),
-		SleepDuration:  float32(totalSleepDuration) / float32(count),
-		Temperature:    totalTemperature / float32(count),
-	}
+	fmt.Println(count)
 
-	return averageLifestyle, nil
+	return &averageLifestyle, nil
 }

@@ -10,6 +10,7 @@ type StorageI interface {
     LifeStyle() LifeStyleI
     WearableData() WearableDataI
     HealthRecommendation() HealthRecommendationI
+    Notification() NotificationI
 }
 
 type MedicalRecordI interface {
@@ -52,5 +53,11 @@ type HealthRecommendationI interface {
     Delete(req *pb.GetById) (*pb.Void, error)
     Get(req *pb.GetById) (*pb.RecommendationRes, error)
     List(req *pb.GetAllRecommendationReq) (*pb.GetAllRecommendation, error)
+}
+
+type NotificationI interface {
+    Create(req *pb.Notification) (*pb.Void, error)
+    Get(req *pb.GetById) (*pb.Notification, error)
+    List(req *pb.GetAllNotificationReq) (*pb.GetAllNotificationRes, error)
 }
 

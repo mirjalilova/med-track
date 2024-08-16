@@ -7,11 +7,12 @@ import (
 )
 
 type Service struct {
-	MedicalRecordS    service.MedicalRecordI
-	GeneticDataS     service.GeneticDataI
-	LifeStyleS       service.LifeStyleI
-	WearableDataS  service.WearableDataI
+	MedicalRecordS        service.MedicalRecordI
+	GeneticDataS          service.GeneticDataI
+	LifeStyleS            service.LifeStyleI
+	WearableDataS         service.WearableDataI
 	HealthRecommendationS service.HealthRecommendationI
+	NotificationS         service.NotificationI
 }
 
 func ConnectDB() (*st.Storage, error) {

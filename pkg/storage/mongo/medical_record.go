@@ -82,7 +82,6 @@ func (m *MedicalRecord) Update(req *pb.MedicalRecordUpdate) (*pb.Void, error) {
 	}
 
 	_, err := m.MedicalRecord.UpdateOne(context.TODO(), filter, update)
-	fmt.Println(err, update, filter)
 	if err != nil {
 		return nil, err
 	}

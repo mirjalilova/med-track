@@ -41,20 +41,23 @@ func CalculateStressLevel(heartRate int32, sleepDuration float64, stepCount int3
 }
 
 func (m *WearableData) CalculateDailyAverages(userId string, date string) (*pb.WearableData, error) {
+	parsedDate, err := time.Parse("2006-01-02 15:04:05", date)
+	if err != nil {
+		return nil, err
+	}
+	startOfDay := parsedDate.Truncate(24 * time.Hour)
+	endOfDay := startOfDay.Add(24 * time.Hour)
+
 	filter := bson.D{
 		{Key: "userid", Value: userId},
 		{Key: "recordedtimestamp", Value: bson.D{
-			{Key: "$gte", Value: date[10:] + "T00:00:00Z"},
-			{Key: "$lt", Value: date[10:] + "T23:59:59Z"},
+			{Key: "$gte", Value: startOfDay.Format("2006-01-02 15:04:05")},
+			{Key: "$lt", Value: endOfDay.Format("2006-01-02 15:04:05")},
 		}},
 		{Key: "deletedat", Value: 0},
 	}
 
-	fmt.Println(date[10:] + "T00:00:00Z")
-	fmt.Println(date[10:] + "T23:59:59Z")
-
 	cursor, err := m.WearableData.Find(context.Background(), filter)
-	fmt.Println("s", err)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +69,6 @@ func (m *WearableData) CalculateDailyAverages(userId string, date string) (*pb.W
 
 	for cursor.Next(context.Background()) {
 		var wd pb.WearableData
-		fmt.Println("sss", err)
 		if err := cursor.Decode(&wd); err != nil {
 			return nil, err
 		}

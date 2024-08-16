@@ -73,4 +73,3 @@ networks:
     external: true
     name: medmon
     driver: bridge
-

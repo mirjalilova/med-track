@@ -1,10 +1,11 @@
-name: Medical Monitoring
+name: Medical MOnitoring
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+
 
 jobs:
   build:
@@ -22,7 +23,10 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.SSH_PORT }}
         script: |
+          pwd
+          ls
           cd ~/project/medmon/med-track
           sudo docker compose down
-          sudo docker compose up --build -d
-          sudo docker-compose up
+          sudo docker compose up -d
+          sudo docker compose up -d
+          
